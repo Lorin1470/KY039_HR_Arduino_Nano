@@ -1,5 +1,7 @@
 此 MD 由 GitHub Copilot 生成。
 
+**Language:** [中文](README.md) | [English](README.en.md)
+
 # KY-039 心跳感測器 (Arduino Nano)
 
 ![Board](https://img.shields.io/badge/Board-Arduino%20Nano-00979D?logo=arduino&logoColor=white)
