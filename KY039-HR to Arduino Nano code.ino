@@ -12,9 +12,10 @@ int beatDetected = 0;      // Value 4: 觸發方波 (用來畫圖跟算心跳)
 const float ALPHA_SMOOTH = 0.2; // 平滑係數：越大波形越靈敏但毛刺多，越小越平滑但有延遲
 const float ALPHA_DC = 0.02;    // 基準線係數：用來追蹤環境光的極慢速變化
 
-// 【關鍵參數】觸發心跳方波的門檻值
-// 因為目前的環境光讓訊號變微弱，所以設在 513 左右，你可以看 Value 3 (綠線) 的最高點來微調
-const int THRESHOLD = 513;      
+// 【關鍵參數】觸發心跳方波的遲滯門檻
+// 高門檻用來觸發心跳，低門檻用來解除觸發，減少訊號在單一門檻附近抖動
+const int THRESHOLD_HIGH = 513;
+const int THRESHOLD_LOW = 510;
 
 void setup() {
   Serial.begin(9600);
@@ -41,11 +42,12 @@ void loop() {
   // 這樣能把向下的波谷翻轉成向上的波峰！然後 +512 將波形置中在圖表中央。
   acSignal = dcTracker - smoothedValue + 512.0;
 
-  // 5. 臨界值判斷 -> 將波形轉換為乾淨的數位方波
-  if (acSignal > THRESHOLD) {
-    beatDetected = 512; // 輸出 512 讓圖表高度一致，方便觀察
-  } else {
-    beatDetected = 0;   // 沒達標就躺平輸出 0
+  // 5. 遲滯門檻判斷 -> 避免訊號在單一門檻附近反覆切換
+  // 超過高門檻才觸發；低於低門檻才解除；位於兩者之間時保留前一次狀態
+  if (acSignal > THRESHOLD_HIGH) {
+    beatDetected = 512;
+  } else if (acSignal < THRESHOLD_LOW) {
+    beatDetected = 0;
   }
 
   // 6. 按照序列埠繪圖家的格式輸出 (以空格分隔)
